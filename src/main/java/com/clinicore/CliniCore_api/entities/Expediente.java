@@ -1,5 +1,6 @@
 package com.clinicore.CliniCore_api.entities;
 
+import com.clinicore.CliniCore_api.enums.EstadoExpediente;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,9 +34,9 @@ public class Expediente implements Serializable {
     private String telefono;
     @Column(name = "alergia_intolerancia", length = 255)
     private String alergiaIntoleracian;
-
-    @Column(length = 255)
-    private String estado;
+    @Column(nullable = false, length = 80)
+    @Enumerated(EnumType.STRING)
+    private EstadoExpediente estado;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paciente_id")
