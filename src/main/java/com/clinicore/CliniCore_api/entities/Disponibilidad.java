@@ -2,10 +2,7 @@ package com.clinicore.CliniCore_api.entities;
 
 import com.clinicore.CliniCore_api.enums.EstadoDisponibilidad;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -15,8 +12,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @Entity
-@Table(name = "disponibilidades", schema = "public", catalog = "CliniCore_db")
+@Table(
+        name = "disponibilidades", schema = "public", catalog = "CliniCore_db",
+        indexes = {
+                @Index(name = "idx_doctor_id", columnList = "doctor_id"),
+                @Index(name = "idx_cita_id", columnList = "cita_id")
+        }
+)
 public class Disponibilidad implements Serializable {
     private static final long serialVersionUID = 1L;
 

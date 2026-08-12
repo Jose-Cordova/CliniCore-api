@@ -1,10 +1,7 @@
 package com.clinicore.CliniCore_api.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -14,8 +11,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @Entity
-@Table(name = "consultas", schema = "public", catalog = "CliniCore_db")
+@Table(
+        name = "consultas", schema = "public", catalog = "CliniCore_db",
+        indexes = {
+                @Index(name = "idx_expediente_id", columnList = "expediente_id")
+        }
+
+)
 public class Consulta implements Serializable {
     private static final long serialVersionUID = 1L;
 
