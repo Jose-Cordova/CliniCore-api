@@ -47,5 +47,5 @@ public class Consulta implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expediente_id")
-    private Expediente expediente;
+    private Paciente expediente;
 }
