@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +19,12 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_doctor_id", columnList = "doctor_id"),
                 @Index(name = "idx_cita_id", columnList = "cita_id")
-        }
+        },
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_disponibilidad_doctor_fecha_hora",
+                columnNames = {"doctor_id", "fecha", "hora_inicio"}
+        )
+
 )
 public class Disponibilidad implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -30,9 +35,9 @@ public class Disponibilidad implements Serializable {
     @Column(nullable = false)
     private LocalDate fecha;
     @Column(nullable = false, name = "hora_inicio")
-    private LocalDateTime horaInicio;
+    private LocalTime horaInicio;
     @Column(nullable = false, name = "hora_fin")
-    private LocalDateTime horaFin;
+    private LocalTime horaFin;
     @Column(nullable = false, length = 80)
     @Enumerated(EnumType.STRING)
     private EstadoDisponibilidad estado;

@@ -3,9 +3,11 @@ package com.clinicore.CliniCore_api.services;
 import com.clinicore.CliniCore_api.dto.EspecialidadDTO;
 import com.clinicore.CliniCore_api.entities.Especialidad;
 import com.clinicore.CliniCore_api.exceptions.BadRequestException;
+import com.clinicore.CliniCore_api.exceptions.ConflictException;
 import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
 import com.clinicore.CliniCore_api.interfaces.IEspecialidadService;
 import com.clinicore.CliniCore_api.mappers.EspecialidadMapper;
+import com.clinicore.CliniCore_api.repository.DoctorRepositiry;
 import com.clinicore.CliniCore_api.repository.EspecialidadRepositiry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 public class EspecialidadService implements IEspecialidadService {
     private final EspecialidadRepositiry repositiry;
     private final EspecialidadMapper mapper;
+    private final DoctorRepositiry doctorRepositiry;
 
     @Override
     @Transactional(readOnly = true)
@@ -65,6 +68,10 @@ public class EspecialidadService implements IEspecialidadService {
         //Buscamos la especialidad en la db
         Especialidad entity = repositiry.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la especialidad con ID: " + id));
+        //Validamos que que no tenga doctores asociados
+        if(doctorRepositiry.existsByEspecialidadId(id)){
+            throw new ConflictException("No se puede eliminar la especialidad porque tiene doctores asociados.");
+        }
         repositiry.delete(entity);
     }
 }

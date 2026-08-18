@@ -2,5 +2,7 @@ package com.clinicore.CliniCore_api.enums;
 
 public enum EstadoCita {
     PENDIENTE,
-    ATENDIDA
+    ATENDIDA,
+    CANCELADA,
+    REASIGNADA
 }
