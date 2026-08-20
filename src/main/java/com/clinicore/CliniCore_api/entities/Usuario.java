@@ -20,14 +20,13 @@ public class Usuario implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @Column(nullable = false, length = 80)
     private String email;
+
     @Column(nullable = false, length = 255)
     private String contrasenia;
+
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean estado;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rol_id")
-    private Role role;
 }

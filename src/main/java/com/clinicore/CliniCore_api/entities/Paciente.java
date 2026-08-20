@@ -22,8 +22,8 @@ public class Paciente implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(nullable = false, name = "codigo_expediente")
-    private Integer codigoExpediente;
+    @Column(nullable = false, name = "codigo_expediente", length = 20)
+    private String codigoExpediente;
     @Column(nullable = false, name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
     @Column(nullable = false, name = "fecha_registro")
@@ -41,7 +41,7 @@ public class Paciente implements Serializable {
     @Column(nullable = false, length = 9)
     private String telefono;
     @Column(name = "alergia_intolerancia", length = 255)
-    private String alergiaIntolerancian;
+    private String alergiaIntolerancia;
     @Column(nullable = false, length = 80)
     @Enumerated(EnumType.STRING)
     private EstadoExpediente estado;

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface EspecialidadRepositiry extends JpaRepository<Especialidad, Integer> {
+public interface EspecialidadRepository extends JpaRepository<Especialidad, Integer> {
     boolean existsByNombre(String nombre);
     boolean existsByNombreAndIdNot(String nombre, Integer id);
 }

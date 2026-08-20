@@ -59,4 +59,13 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
+
+    //Método para el manejo de las exepciones de autorización
+    @ExceptionHandler(AccesoNoAutorizadoException.class)
+    public ResponseEntity<?> handleAccesoNoAutorizado(AccesoNoAutorizadoException ex){
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
 }
