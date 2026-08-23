@@ -18,7 +18,8 @@ import java.time.LocalTime;
         name = "disponibilidades", schema = "public", catalog = "CliniCore_db",
         indexes = {
                 @Index(name = "idx_doctor_id", columnList = "doctor_id"),
-                @Index(name = "idx_cita_id", columnList = "cita_id")
+                @Index(name = "idx_cita_id", columnList = "cita_id"),
+                @Index(name = "idx_disp_doc_fecha_estado", columnList = "doctor_id, fecha, estado")
         },
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_disponibilidad_doctor_fecha_hora",

@@ -29,9 +29,15 @@ public interface DisponibilidadRepository extends JpaRepository<Disponibilidad, 
     //Slot libre más cercano: los libres del doctor ese día, ordenados por hora
     List<Disponibilidad> findByDoctorIdAndFechaAndEstadoOrderByHoraInicio(
             Integer doctorId, LocalDate fecha, EstadoDisponibilidad estado);
+    //Busqueda para pacientes
+    List<Disponibilidad> findByDoctorEspecialidadIdAndFechaAndEstadoOrderByHoraInicio(
+            Integer especialidadId, LocalDate fecha, EstadoDisponibilidad estado);
 
-    //Único slot que ocupa una cita (para liberar al cancelar/reasignar)
+    //Único slot que ocupa una cita (para liberar o bloquear al reasignar)
     Optional<Disponibilidad> findByCitaId(Integer citaId);
+
+    //Verificar si ya se generaron sllots para evitar dupllicados
+    boolean existsByDoctorIdAndFecha(Integer doctorId, LocalDate fecha);
 
     void deleteByDoctorIdAndFecha(Integer doctorId, LocalDate fecha);
 }
