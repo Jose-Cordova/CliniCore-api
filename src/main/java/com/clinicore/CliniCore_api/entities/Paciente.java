@@ -41,7 +41,7 @@ public class Paciente implements Serializable {
     @Column(nullable = false, length = 9)
     private String telefono;
     @Column(name = "alergia_intolerancia", length = 255)
-    private String alergiaIntolerancian;
+    private String alergiaIntolerancia;
     @Column(nullable = false, length = 80)
     @Enumerated(EnumType.STRING)
     private EstadoExpediente estado;
