@@ -19,7 +19,7 @@ import java.util.Map;
 public class EspecialidadController {
     private final IEspecialidadService especialidadService;
 
-    //Creamos el ept para obtener todas las especialidades
+    //creamos el ept para obtener todas las especialidades
 
     @PreAuthorize("hasRole('PACIENTE')")
     @GetMapping("/especialidades")
