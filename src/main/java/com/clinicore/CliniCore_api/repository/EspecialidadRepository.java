@@ -1,11 +1,17 @@
 package com.clinicore.CliniCore_api.repository;
 
 import com.clinicore.CliniCore_api.entities.Especialidad;
+import com.clinicore.CliniCore_api.entities.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface EspecialidadRepositiry extends JpaRepository<Especialidad, Integer> {
+public interface EspecialidadRepository extends JpaRepository<Especialidad, Integer> {
     boolean existsByNombre(String nombre);
     boolean existsByNombreAndIdNot(String nombre, Integer id);
+    Optional<Especialidad> findByNombre(String nombre);
+
+
 }

@@ -9,7 +9,7 @@ import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
 import com.clinicore.CliniCore_api.interfaces.IDoctorService;
 import com.clinicore.CliniCore_api.mappers.DoctorMapper;
 import com.clinicore.CliniCore_api.repository.DoctorRepositiry;
-import com.clinicore.CliniCore_api.repository.EspecialidadRepositiry;
+import com.clinicore.CliniCore_api.repository.EspecialidadRepository;
 import com.clinicore.CliniCore_api.repository.UsuarioRepositiry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 public class DoctorService implements IDoctorService {
     private final DoctorRepositiry repositiry;
     private final DoctorMapper mapper;
-    private final EspecialidadRepositiry especialidadRepositiry;
+    private final EspecialidadRepository especialidadRepository;
     private final UsuarioRepositiry usuarioRepositiry;
 
     @Override
@@ -108,7 +108,7 @@ public class DoctorService implements IDoctorService {
         if (especialidadId == null) {
             return null;
         }
-        return especialidadRepositiry.findById(especialidadId)
+        return especialidadRepository.findById(especialidadId)
                 .orElseThrow(() -> new ResourceNotFoundException("No existe la especialidad con ID: " + especialidadId));
     }
 

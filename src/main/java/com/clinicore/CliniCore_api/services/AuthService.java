@@ -1,9 +1,6 @@
 package com.clinicore.CliniCore_api.services;
 
-import com.clinicore.CliniCore_api.dto.auth.LoginRequestDTO;
-import com.clinicore.CliniCore_api.dto.auth.LoginResponseDTO;
-import com.clinicore.CliniCore_api.dto.auth.RegistroDoctorDTO;
-import com.clinicore.CliniCore_api.dto.auth.RegistroPacienteDTO;
+import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.entities.*;
 import com.clinicore.CliniCore_api.enums.EstadoExpediente;
 import com.clinicore.CliniCore_api.exceptions.BadRequestException;
@@ -24,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +28,7 @@ public class AuthService implements IAuthService {
 
     private static final String ROLE_PACIENTE = "PACIENTE";
     private static final String ROLE_DOCTOR = "DOCTOR";
+    private static final String ROLE_PERSONAL = "PERSONAL";
 
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
@@ -142,6 +139,25 @@ public class AuthService implements IAuthService {
         // 6. Generar token de respuesta
         return generarRespuestaConToken(usuario, doctor.getNombre() + " " + doctor.getApellido(),
                 "DOCTOR", ROLE_DOCTOR);
+    }
+
+    @Override
+    @Transactional
+    public LoginResponseDTO registrarPersonal(RegistroPersonalDTO dto) {
+        validarCredencialesNuevas(dto.getEmail(), dto.getPassword());
+
+        // Crear usuario
+        Usuario usuario = new Usuario();
+        usuario.setEmail(dto.getEmail());
+        usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
+        usuario.setEstado(true);
+        usuario = usuarioRepository.save(usuario);
+
+        // Asignar rol PERSONAL
+        asignarRole(usuario, ROLE_PERSONAL);
+
+        // Generar token de respuesta (nombre = email al no tener nombre real)
+        return generarRespuestaConToken(usuario, usuario.getEmail(), "PERSONAL", ROLE_PERSONAL);
     }
 
     private void validarCredencialesNuevas(String email, String password) {

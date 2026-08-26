@@ -1,9 +1,6 @@
 package com.clinicore.CliniCore_api.controllers;
 
-import com.clinicore.CliniCore_api.dto.auth.LoginRequestDTO;
-import com.clinicore.CliniCore_api.dto.auth.LoginResponseDTO;
-import com.clinicore.CliniCore_api.dto.auth.RegistroDoctorDTO;
-import com.clinicore.CliniCore_api.dto.auth.RegistroPacienteDTO;
+import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.interfaces.IAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -48,6 +45,13 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registrarDoctor(@RequestBody RegistroDoctorDTO dto) {
         LoginResponseDTO response = authService.registrarDoctor(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/registro-personal")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<LoginResponseDTO> registrarPersonal(@RequestBody RegistroPersonalDTO dto) {
+        LoginResponseDTO response = authService.registrarPersonal(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

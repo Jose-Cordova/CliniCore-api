@@ -5,6 +5,7 @@ import com.clinicore.CliniCore_api.interfaces.IEspecialidadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -19,6 +20,8 @@ public class EspecialidadController {
     private final IEspecialidadService especialidadService;
 
     //Creamos el ept para obtener todas las especialidades
+
+    @PreAuthorize("hasRole('PACIENTE')")
     @GetMapping("/especialidades")
     public ResponseEntity<List<EspecialidadDTO>> getAll(){
         return ResponseEntity.ok(especialidadService.findAll());
@@ -31,6 +34,7 @@ public class EspecialidadController {
     }
 
     //Creamos el ept para crear una especialidad
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/especialidades")
     public ResponseEntity<?> create(@RequestBody EspecialidadDTO dto){
         //Creamos un map para restructurar la repuesta
@@ -44,6 +48,7 @@ public class EspecialidadController {
     }
 
     //Creamos el ept para actualizar una especialidad
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/especialidades/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody EspecialidadDTO dto){
         //Creamos el map para restructurar la respuesta
@@ -58,6 +63,7 @@ public class EspecialidadController {
     }
 
     //Creamos el ept para eliminar una especialidad
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/especialidades/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id){
         especialidadService.delete(id);
