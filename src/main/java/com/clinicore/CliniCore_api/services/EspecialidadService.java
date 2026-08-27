@@ -8,7 +8,7 @@ import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
 import com.clinicore.CliniCore_api.interfaces.IEspecialidadService;
 import com.clinicore.CliniCore_api.mappers.EspecialidadMapper;
 import com.clinicore.CliniCore_api.repository.DoctorRepositiry;
-import com.clinicore.CliniCore_api.repository.EspecialidadRepositiry;
+import com.clinicore.CliniCore_api.repository.EspecialidadRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class EspecialidadService implements IEspecialidadService {
-    private final EspecialidadRepositiry repositiry;
+    private final EspecialidadRepository repositiry;
     private final EspecialidadMapper mapper;
     private final DoctorRepositiry doctorRepositiry;
 

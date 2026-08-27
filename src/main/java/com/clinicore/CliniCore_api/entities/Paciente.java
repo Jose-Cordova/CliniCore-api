@@ -22,8 +22,8 @@ public class Paciente implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(nullable = false, name = "codigo_expediente")
-    private Integer codigoExpediente;
+    @Column(nullable = false, name = "codigo_expediente", length = 20)
+    private String codigoExpediente;
     @Column(nullable = false, name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
     @Column(nullable = false, name = "fecha_registro")
