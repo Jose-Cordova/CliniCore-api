@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UsuarioEstadoDTO {
-    private boolean estado;
+    private boolean estado; //Inactivar usuario
 }
