@@ -1,5 +1,6 @@
 package com.clinicore.CliniCore_api.controllers;
 
+import com.clinicore.CliniCore_api.dto.UsuarioDTO;
 import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.interfaces.IAuthService;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,7 +22,6 @@ public class AuthController {
 
     /**
      * Endpoint público para iniciar sesión.
-     * Devuelve token JWT y datos del usuario autenticado.
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
@@ -26,9 +30,7 @@ public class AuthController {
     }
 
     /**
-     * Endpoint público para que un paciente se registre por sí mismo.
-     * Crea el usuario con rol PACIENTE, su expediente (entidad Paciente)
-     * y devuelve el token para que quede logueado.
+     * Endpoint público para registro de pacientes.
      */
     @PostMapping("/registro-paciente")
     public ResponseEntity<LoginResponseDTO> registrarPaciente(@RequestBody RegistroPacienteDTO dto) {
@@ -37,9 +39,7 @@ public class AuthController {
     }
 
     /**
-     * Endpoint protegido: solo un ADMIN puede registrar un doctor.
-     * La autenticación ya viene exigida por SecurityConfig (anyRequest().authenticated())
-     * y @PreAuthorize refuerza que el rol sea ADMIN.
+     * Endpoint protegido: solo ADMIN puede registrar doctores.
      */
     @PostMapping("/registro-doctor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -48,10 +48,36 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * Endpoint protegido: solo ADMIN puede registrar personal.
+     */
     @PostMapping("/registro-personal")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registrarPersonal(@RequestBody RegistroPersonalDTO dto) {
         LoginResponseDTO response = authService.registrarPersonal(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Endpoint autenticado para que cualquier usuario cambie su contraseña.
+     * Se utiliza principalmente cuando debeCambiarContrasenia es true.
+     */
+    @PostMapping("/cambiar-contrasenia")
+    public ResponseEntity<LoginResponseDTO> cambiarContrasenia(@RequestBody CambioContrasenaDTO dto) {
+        LoginResponseDTO response = authService.cambiarContrasenia(dto.getNuevaContrasenia());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/usuarios")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UsuarioDTO>> listarUsuarios() {
+        return ResponseEntity.ok(authService.listarUsuarios());
+    }
+
+    @PostMapping("/registro-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<LoginResponseDTO> registrarAdmin(@RequestBody RegistroAdminDTO dto) {
+        LoginResponseDTO response = authService.registrarAdmin(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

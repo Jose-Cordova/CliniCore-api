@@ -21,6 +21,7 @@ public class UsuarioPrincipal implements UserDetails {
     private final Integer pacienteId;
     private final Integer doctorId;
     private final String rol;
+    private final boolean debeCambiarContrasenia;
 
     public UsuarioPrincipal(
             Usuario usuario,
@@ -28,7 +29,8 @@ public class UsuarioPrincipal implements UserDetails {
             String tipo,
             Integer pacienteId,
             Integer doctorId,
-            String rol) {
+            String rol,
+            boolean debeCambiarContrasenia) {
         this.id = usuario.getId();
         this.username = usuario.getEmail();
         this.password = usuario.getContrasenia();
@@ -38,6 +40,7 @@ public class UsuarioPrincipal implements UserDetails {
         this.pacienteId = pacienteId;
         this.doctorId = doctorId;
         this.rol = rol;
+        this.debeCambiarContrasenia = debeCambiarContrasenia;
     }
 
     @Override

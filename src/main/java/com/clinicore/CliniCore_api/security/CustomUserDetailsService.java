@@ -38,6 +38,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario o contraseña incorrectos"));
 
         String rol = usuarioRole.getRole().getNombre();
+        boolean debeCambiar = usuario.isDebeCambiarContrasenia();
 
         // 3. Ver si es doctor
         Optional<Doctor> doctorOpt = doctorRepository.findByUsuario_Id(usuario.getId());
@@ -49,7 +50,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                     "DOCTOR",
                     null,
                     doctor.getId(),
-                    rol
+                    rol,
+                    debeCambiar
             );
         }
 
@@ -63,7 +65,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                     "PACIENTE",
                     paciente.getId(),
                     null,
-                    rol
+                    rol,
+                    debeCambiar
             );
         }
 
@@ -74,7 +77,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 rol,
                 null,
                 null,
-                rol
+                rol,
+                debeCambiar
         );
     }
 }

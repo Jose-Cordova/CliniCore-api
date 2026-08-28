@@ -34,47 +34,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        // Si no hay token, continuamos sin autenticar
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7); // quitar "Bearer "
+        String token = header.substring(7);
 
         try {
             Claims claims = jwtService.validarYExtraerClaims(token);
 
-            // Extraer datos del token
-            String email = claims.getSubject(); // en nuestro caso es el email
+            Integer id = claims.get("id", Integer.class);
+            String email = claims.getSubject();
             String nombre = claims.get("nombre", String.class);
             String tipo = claims.get("tipo", String.class);
             Integer pacienteId = claims.get("pacienteId", Integer.class);
             Integer doctorId = claims.get("doctorId", Integer.class);
             String rol = claims.get("rol", String.class);
+            Boolean debeCambiar = claims.get("debeCambiarContrasenia", Boolean.class);
+            boolean debeCambiarBoolean = debeCambiar != null && debeCambiar;
 
-            // Construir el usuario autenticado
             AuthenticatedUser usuarioAutenticado = new AuthenticatedUser(
-                    email, nombre, tipo, pacienteId, doctorId, rol
+                    id,
+                    email,
+                    nombre,
+                    tipo,
+                    pacienteId,
+                    doctorId,
+                    rol,
+                    debeCambiarBoolean
             );
 
-            // Crear la autoridad a partir del rol
             List<GrantedAuthority> authorities =
                     List.of(new SimpleGrantedAuthority("ROLE_" + rol));
 
-            // Crear el objeto Authentication
             var authentication = new UsernamePasswordAuthenticationToken(
                     usuarioAutenticado,
                     null,
                     authorities
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Guardar en el contexto de seguridad
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (JwtException e) {
-            // Token inválido o expirado: limpiamos el contexto y dejamos pasar
             SecurityContextHolder.clearContext();
         }
 
