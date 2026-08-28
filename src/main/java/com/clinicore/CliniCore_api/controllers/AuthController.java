@@ -1,6 +1,7 @@
 package com.clinicore.CliniCore_api.controllers;
 
 import com.clinicore.CliniCore_api.dto.UsuarioDTO;
+import com.clinicore.CliniCore_api.dto.UsuarioEstadoDTO; // nuevo DTO
 import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.interfaces.IAuthService;
 import lombok.RequiredArgsConstructor;
@@ -14,59 +15,54 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final IAuthService authService;
 
-    /**
-     * Endpoint público para iniciar sesión.
-     */
-    @PostMapping("/login")
+    // ==================== AUTH ====================
+
+    @PostMapping("/auth/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
         LoginResponseDTO response = authService.login(dto);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Endpoint público para registro de pacientes.
-     */
-    @PostMapping("/registro-paciente")
+    @PostMapping("/auth/registro-paciente")
     public ResponseEntity<LoginResponseDTO> registrarPaciente(@RequestBody RegistroPacienteDTO dto) {
         LoginResponseDTO response = authService.registrarPaciente(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Endpoint protegido: solo ADMIN puede registrar doctores.
-     */
-    @PostMapping("/registro-doctor")
+    @PostMapping("/auth/registro-doctor")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registrarDoctor(@RequestBody RegistroDoctorDTO dto) {
         LoginResponseDTO response = authService.registrarDoctor(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Endpoint protegido: solo ADMIN puede registrar personal.
-     */
-    @PostMapping("/registro-personal")
+    @PostMapping("/auth/registro-personal")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LoginResponseDTO> registrarPersonal(@RequestBody RegistroPersonalDTO dto) {
         LoginResponseDTO response = authService.registrarPersonal(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Endpoint autenticado para que cualquier usuario cambie su contraseña.
-     * Se utiliza principalmente cuando debeCambiarContrasenia es true.
-     */
-    @PostMapping("/cambiar-contrasenia")
+    @PostMapping("/auth/registro-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<LoginResponseDTO> registrarAdmin(@RequestBody RegistroAdminDTO dto) {
+        LoginResponseDTO response = authService.registrarAdmin(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/auth/cambiar-contrasenia")
     public ResponseEntity<LoginResponseDTO> cambiarContrasenia(@RequestBody CambioContrasenaDTO dto) {
         LoginResponseDTO response = authService.cambiarContrasenia(dto.getNuevaContrasenia());
         return ResponseEntity.ok(response);
     }
+
+    // ==================== USUARIOS ====================
 
     @GetMapping("/usuarios")
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,10 +70,14 @@ public class AuthController {
         return ResponseEntity.ok(authService.listarUsuarios());
     }
 
-    @PostMapping("/registro-admin")
+    @PatchMapping("/usuarios/{id}/estado")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LoginResponseDTO> registrarAdmin(@RequestBody RegistroAdminDTO dto) {
-        LoginResponseDTO response = authService.registrarAdmin(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<?> cambiarEstadoUsuario(
+            @PathVariable Integer id,
+            @RequestBody UsuarioEstadoDTO dto) {
+        authService.cambiarEstadoUsuario(id, dto.isEstado());
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Estado del usuario actualizado correctamente");
+        return ResponseEntity.ok(response);
     }
 }
