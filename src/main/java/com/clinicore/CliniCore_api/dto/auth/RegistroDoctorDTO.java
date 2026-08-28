@@ -8,7 +8,7 @@ import lombok.Setter;
 public class RegistroDoctorDTO {
     // Datos de acceso
     private String email;
-    private String password;
+
 
     // Datos del doctor
     private String nombre;

@@ -1,5 +1,6 @@
 package com.clinicore.CliniCore_api.services;
 
+import com.clinicore.CliniCore_api.dto.UsuarioDTO;
 import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.entities.*;
 import com.clinicore.CliniCore_api.enums.EstadoExpediente;
@@ -8,6 +9,7 @@ import com.clinicore.CliniCore_api.exceptions.ConflictException;
 import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
 import com.clinicore.CliniCore_api.interfaces.IAuthService;
 import com.clinicore.CliniCore_api.repository.*;
+import com.clinicore.CliniCore_api.security.AuthenticatedUser;
 import com.clinicore.CliniCore_api.security.JwtService;
 import com.clinicore.CliniCore_api.security.UsuarioPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +17,17 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +36,7 @@ public class AuthService implements IAuthService {
     private static final String ROLE_PACIENTE = "PACIENTE";
     private static final String ROLE_DOCTOR = "DOCTOR";
     private static final String ROLE_PERSONAL = "PERSONAL";
+    private static final String ROLE_ADMIN = "ADMIN";
 
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
@@ -59,7 +67,9 @@ public class AuthService implements IAuthService {
                 principal.getUsername(),
                 principal.getNombre(),
                 principal.getTipo(),
-                principal.getRol()
+                principal.getRol(),
+                principal.isDebeCambiarContrasenia(),
+                null
         );
     }
 
@@ -68,7 +78,6 @@ public class AuthService implements IAuthService {
     public LoginResponseDTO registrarPaciente(RegistroPacienteDTO dto) {
         validarCredencialesNuevas(dto.getEmail(), dto.getPassword());
 
-        // 1. Crear paciente
         Paciente paciente = new Paciente();
         paciente.setNombre(dto.getNombre());
         paciente.setApellido(dto.getApellido());
@@ -77,42 +86,36 @@ public class AuthService implements IAuthService {
         paciente.setGenero(dto.getGenero());
         paciente.setDireccion(dto.getDireccion());
         paciente.setTelefono(dto.getTelefono());
-        paciente.setAlergiaIntolerancia(dto.getAlergiaIntolerancia()); // corregir nombre si es necesario
+        paciente.setAlergiaIntolerancia(dto.getAlergiaIntolerancia());
         paciente.setFechaRegistro(LocalDate.now());
         paciente.setCodigoExpediente(generarCodigoExpediente());
-        paciente.setEstado(EstadoExpediente.ACTIVO); // asumiendo que el enum tiene ACTIVO
-
+        paciente.setEstado(EstadoExpediente.ACTIVO);
         paciente = pacienteRepository.save(paciente);
 
-        // 2. Crear usuario
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
         usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
         usuario.setEstado(true);
+        usuario.setDebeCambiarContrasenia(false); // pacientes no cambian obligatoriamente
         usuario = usuarioRepository.save(usuario);
 
-        // 3. Asociar usuario al paciente
         paciente.setUsuario(usuario);
         pacienteRepository.save(paciente);
 
-        // 4. Asignar rol PACIENTE
         asignarRole(usuario, ROLE_PACIENTE);
 
-        // 5. Generar token de respuesta
         return generarRespuestaConToken(usuario, paciente.getNombre() + " " + paciente.getApellido(),
-                "PACIENTE", ROLE_PACIENTE);
+                "PACIENTE", ROLE_PACIENTE, false, null);
     }
 
     @Override
     @Transactional
     public LoginResponseDTO registrarDoctor(RegistroDoctorDTO dto) {
-        validarCredencialesNuevas(dto.getEmail(), dto.getPassword());
+        validarEmailUnico(dto.getEmail());
 
-        // 1. Validar especialidad
         Especialidad especialidad = especialidadRepository.findById(dto.getEspecialidadId())
                 .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
 
-        // 2. Crear doctor
         Doctor doctor = new Doctor();
         doctor.setNombre(dto.getNombre());
         doctor.setApellido(dto.getApellido());
@@ -122,43 +125,166 @@ public class AuthService implements IAuthService {
         doctor.setEspecialidad(especialidad);
         doctor = doctorRepository.save(doctor);
 
-        // 3. Crear usuario
+        String passwordTemporal = generarContraseniaAleatoria();
+
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
-        usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
+        usuario.setContrasenia(passwordEncoder.encode(passwordTemporal));
         usuario.setEstado(true);
+        usuario.setDebeCambiarContrasenia(true);
         usuario = usuarioRepository.save(usuario);
 
-        // 4. Asociar usuario al doctor
         doctor.setUsuario(usuario);
         doctorRepository.save(doctor);
 
-        // 5. Asignar rol DOCTOR
         asignarRole(usuario, ROLE_DOCTOR);
 
-        // 6. Generar token de respuesta
         return generarRespuestaConToken(usuario, doctor.getNombre() + " " + doctor.getApellido(),
-                "DOCTOR", ROLE_DOCTOR);
+                "DOCTOR", ROLE_DOCTOR, true, passwordTemporal);
     }
 
     @Override
     @Transactional
     public LoginResponseDTO registrarPersonal(RegistroPersonalDTO dto) {
-        validarCredencialesNuevas(dto.getEmail(), dto.getPassword());
+        validarEmailUnico(dto.getEmail());
 
-        // Crear usuario
+        String passwordTemporal = generarContraseniaAleatoria();
+
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
-        usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
+        usuario.setContrasenia(passwordEncoder.encode(passwordTemporal));
         usuario.setEstado(true);
+        usuario.setDebeCambiarContrasenia(true);
         usuario = usuarioRepository.save(usuario);
 
-        // Asignar rol PERSONAL
         asignarRole(usuario, ROLE_PERSONAL);
 
-        // Generar token de respuesta (nombre = email al no tener nombre real)
-        return generarRespuestaConToken(usuario, usuario.getEmail(), "PERSONAL", ROLE_PERSONAL);
+        return generarRespuestaConToken(usuario, usuario.getEmail(), "PERSONAL", ROLE_PERSONAL, true, passwordTemporal);
     }
+
+    @Override
+    @Transactional
+    public LoginResponseDTO cambiarContrasenia(String nuevaContrasenia) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
+
+        Usuario usuario = usuarioRepository.findByEmail(authenticatedUser.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        if (nuevaContrasenia == null || nuevaContrasenia.length() < 6) {
+            throw new BadRequestException("La contraseña debe tener al menos 6 caracteres");
+        }
+
+        usuario.setContrasenia(passwordEncoder.encode(nuevaContrasenia));
+        usuario.setDebeCambiarContrasenia(false);
+        usuario = usuarioRepository.save(usuario);
+
+        // Construir un nuevo token sin la bandera
+        UsuarioPrincipal principal = new UsuarioPrincipal(
+                usuario,
+                usuario.getEmail(),
+                authenticatedUser.tipo(),
+                authenticatedUser.pacienteId(),
+                authenticatedUser.doctorId(),
+                authenticatedUser.rol(),
+                false
+        );
+        String token = jwtService.generarToken(principal);
+
+        return new LoginResponseDTO(
+                token,
+                usuario.getEmail(),
+                principal.getNombre(),
+                principal.getTipo(),
+                principal.getRol(),
+                false,
+                null
+        );
+    }
+
+    @Override
+    @Transactional
+    public void cambiarEstadoUsuario(Integer usuarioId, boolean nuevoEstado) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
+
+        if (authenticatedUser.id() != null && authenticatedUser.id().equals(usuarioId)) {
+            throw new BadRequestException("No puedes cambiar tu propio estado");
+        }
+
+        Usuario usuarioObjetivo = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        UsuarioRole usuarioRole = usuarioRoleRepository.findByUsuario_Id(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado para el usuario"));
+
+        if (ROLE_ADMIN.equals(usuarioRole.getRole().getNombre())) {
+            throw new BadRequestException("No se puede cambiar el estado de un usuario con rol ADMIN");
+        }
+
+        usuarioObjetivo.setEstado(nuevoEstado);
+        usuarioRepository.save(usuarioObjetivo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO> listarUsuarios() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<UsuarioDTO> resultado = new ArrayList<>();
+
+        for (Usuario usuario : usuarios) {
+            UsuarioRole usuarioRole = usuarioRoleRepository.findByUsuario_Id(usuario.getId())
+                    .orElse(null);
+            String rol = usuarioRole != null ? usuarioRole.getRole().getNombre() : "SIN_ROL";
+
+            String nombre = usuario.getEmail();
+            String tipo = rol;
+
+            Optional<Doctor> doctorOpt = doctorRepository.findByUsuario_Id(usuario.getId());
+            if (doctorOpt.isPresent()) {
+                nombre = doctorOpt.get().getNombre() + " " + doctorOpt.get().getApellido();
+                tipo = "DOCTOR";
+            } else {
+                Optional<Paciente> pacienteOpt = pacienteRepository.findByUsuario_Id(usuario.getId());
+                if (pacienteOpt.isPresent()) {
+                    nombre = pacienteOpt.get().getNombre() + " " + pacienteOpt.get().getApellido();
+                    tipo = "PACIENTE";
+                }
+            }
+
+            resultado.add(new UsuarioDTO(
+                    usuario.getId(),
+                    usuario.getEmail(),
+                    usuario.isEstado(),
+                    rol,
+                    nombre,
+                    tipo
+            ));
+        }
+
+        return resultado;
+    }
+
+    @Override
+    @Transactional
+    public LoginResponseDTO registrarAdmin(RegistroAdminDTO dto) {
+        validarEmailUnico(dto.getEmail());
+
+        String passwordTemporal = generarContraseniaAleatoria();
+
+        Usuario usuario = new Usuario();
+        usuario.setEmail(dto.getEmail());
+        usuario.setContrasenia(passwordEncoder.encode(passwordTemporal));
+        usuario.setEstado(true);
+        usuario.setDebeCambiarContrasenia(true);
+        usuario = usuarioRepository.save(usuario);
+
+        asignarRole(usuario, ROLE_ADMIN);
+
+        return generarRespuestaConToken(usuario, usuario.getEmail(), "ADMIN", ROLE_ADMIN, true, passwordTemporal);
+    }
+
+    // ==================== MÉTODOS AUXILIARES ====================
 
     private void validarCredencialesNuevas(String email, String password) {
         if (email == null || email.isBlank()) {
@@ -166,6 +292,13 @@ public class AuthService implements IAuthService {
         }
         if (password == null || password.length() < 6) {
             throw new BadRequestException("La contraseña debe tener al menos 6 caracteres");
+        }
+        validarEmailUnico(email);
+    }
+
+    private void validarEmailUnico(String email) {
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("El email es obligatorio");
         }
         if (usuarioRepository.existsByEmail(email)) {
             throw new ConflictException("Ya existe un usuario con el email '" + email + "'");
@@ -183,17 +316,19 @@ public class AuthService implements IAuthService {
         usuarioRoleRepository.save(usuarioRole);
     }
 
-    private LoginResponseDTO generarRespuestaConToken(Usuario usuario, String nombre, String tipo, String rol) {
+    private LoginResponseDTO generarRespuestaConToken(Usuario usuario, String nombre, String tipo, String rol,
+                                                      boolean debeCambiar, String contraseniaTemporal) {
         UsuarioPrincipal principal = new UsuarioPrincipal(
                 usuario,
                 nombre,
                 tipo,
                 obtenerPacienteId(usuario),
                 obtenerDoctorId(usuario),
-                rol
+                rol,
+                debeCambiar
         );
         String token = jwtService.generarToken(principal);
-        return new LoginResponseDTO(token, usuario.getEmail(), nombre, tipo, rol);
+        return new LoginResponseDTO(token, usuario.getEmail(), nombre, tipo, rol, debeCambiar, contraseniaTemporal);
     }
 
     private Integer obtenerPacienteId(Usuario usuario) {
@@ -217,5 +352,15 @@ public class AuthService implements IAuthService {
         long cantidad = pacienteRepository.countByFechaRegistroBetween(inicio, fin);
 
         return prefijo + String.format("%03d", cantidad + 1);
+    }
+
+    private String generarContraseniaAleatoria() {
+        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
+        }
+        return sb.toString();
     }
 }

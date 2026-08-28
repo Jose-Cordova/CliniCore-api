@@ -21,7 +21,6 @@ public class EspecialidadController {
 
     //creamos el ept para obtener todas las especialidades
 
-    @PreAuthorize("hasRole('PACIENTE')")
     @GetMapping("/especialidades")
     public ResponseEntity<List<EspecialidadDTO>> getAll(){
         return ResponseEntity.ok(especialidadService.findAll());

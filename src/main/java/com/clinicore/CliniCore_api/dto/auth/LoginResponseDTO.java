@@ -13,4 +13,6 @@ public class LoginResponseDTO {
     private String nombre;
     private String tipo;
     private String role;
+    private boolean debeCambiarContrasenia;
+    private String contraseniaTemporal; // solo para registros de doctor/personal
 }

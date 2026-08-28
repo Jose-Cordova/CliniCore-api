@@ -24,29 +24,28 @@ public class JwtService {
 
     /**
      * Genera un token JWT con los datos que luego viajarán en cada petición.
-     * El subject será el email del usuario.
      */
     public String generarToken(UsuarioPrincipal principal) {
         Date ahora = new Date();
         Date expiracion = new Date(ahora.getTime() + expirationMs);
 
         return Jwts.builder()
-                .subject(principal.getUsername())               // email
-                .claim("id", principal.getId())                 // id usuario
-                .claim("nombre", principal.getNombre())         // nombre real
-                .claim("tipo", principal.getTipo())             // DOCTOR, PACIENTE, ADMIN...
-                .claim("pacienteId", principal.getPacienteId()) // id de paciente (si aplica)
-                .claim("doctorId", principal.getDoctorId())     // id de doctor (si aplica)
-                .claim("rol", principal.getRol())               // rol principal
+                .subject(principal.getUsername())
+                .claim("id", principal.getId())
+                .claim("nombre", principal.getNombre())
+                .claim("tipo", principal.getTipo())
+                .claim("pacienteId", principal.getPacienteId())
+                .claim("doctorId", principal.getDoctorId())
+                .claim("rol", principal.getRol())
+                .claim("debeCambiarContrasenia", principal.isDebeCambiarContrasenia())
                 .issuedAt(ahora)
                 .expiration(expiracion)
-                .signWith(obtenerLlave())                       // firma HS256
+                .signWith(obtenerLlave())
                 .compact();
     }
 
     /**
      * Valida la firma y la expiración del token.
-     * Lanza io.jsonwebtoken.JwtException si el token es inválido o expiró.
      */
     public Claims validarYExtraerClaims(String token) {
         return Jwts.parser()

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegistroPersonalDTO {
-    private String email;
+public class CambioContrasenaDTO {
+    private String nuevaContrasenia;
+
 }

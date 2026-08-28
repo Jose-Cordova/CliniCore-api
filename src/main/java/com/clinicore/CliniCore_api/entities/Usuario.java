@@ -29,4 +29,7 @@ public class Usuario implements Serializable {
 
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean estado;
+
+    @Column(name = "debe_cambiar_contrasenia", columnDefinition = "boolean default false")
+    private boolean debeCambiarContrasenia;
 }
