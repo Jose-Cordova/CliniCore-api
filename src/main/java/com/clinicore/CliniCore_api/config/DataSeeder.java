@@ -21,13 +21,13 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Roles
+        // 1. Roles
         crearRoleSiNoExiste("ADMIN");
         crearRoleSiNoExiste("DOCTOR");
         crearRoleSiNoExiste("PACIENTE");
         crearRoleSiNoExiste("PERSONAL");
 
-        // Especialidades
+        // 2. Especialidades
         crearEspecialidadSiNoExiste("Medicina General");
         crearEspecialidadSiNoExiste("Pediatría");
         crearEspecialidadSiNoExiste("Cardiología");
@@ -36,7 +36,7 @@ public class DataSeeder implements CommandLineRunner {
         crearEspecialidadSiNoExiste("Ginecología");
         crearEspecialidadSiNoExiste("Oftalmología");
 
-        // Admin por defecto
+        // 3. Admin por defecto (admin@gmail.com / admin123)
         crearAdminSiNoExiste();
     }
 
@@ -61,18 +61,15 @@ public class DataSeeder implements CommandLineRunner {
         String passwordAdmin = "admin123";
 
         if (usuarioRepository.findByEmail(emailAdmin).isEmpty()) {
-            // 1. Crear usuario
             Usuario admin = new Usuario();
             admin.setEmail(emailAdmin);
             admin.setContrasenia(passwordEncoder.encode(passwordAdmin));
             admin.setEstado(true);
             admin = usuarioRepository.save(admin);
 
-            // 2. Obtener rol ADMIN
             Role roleAdmin = roleRepository.findByNombre("ADMIN")
                     .orElseThrow(() -> new RuntimeException("Rol ADMIN no existe"));
 
-            // 3. Asignar rol en usuarios_roles
             UsuarioRole usuarioRole = new UsuarioRole();
             usuarioRole.setUsuario(admin);
             usuarioRole.setRole(roleAdmin);

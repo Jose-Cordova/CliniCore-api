@@ -12,10 +12,10 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret}")
+    @Value("${app.jwt.secret:CliniCoreSuperSecretKey2026SecureJwtAuthenticationKeyTokenMustBeLongEnough}")
     private String secret;
 
-    @Value("${app.jwt.expiration-ms}")
+    @Value("${app.jwt.expiration-ms:86400000}")
     private long expirationMs;
 
     private SecretKey obtenerLlave() {
