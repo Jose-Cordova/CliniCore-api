@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface PacienteRepository extends JpaRepository<Paciente, Integer> {
 
     Optional<Paciente> findByUsuario_Id(Integer usuarioId);
+    boolean existsByDui(String dui);
+    boolean existsByTelefono(String telefono);
 
     @Query("SELECT COUNT(p) FROM Paciente p WHERE p.fechaRegistro BETWEEN :inicio AND :fin")
     long countByFechaRegistroBetween(

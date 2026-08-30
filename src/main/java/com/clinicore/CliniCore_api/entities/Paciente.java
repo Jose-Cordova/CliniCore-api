@@ -32,13 +32,13 @@ public class Paciente implements Serializable {
     private String nombre;
     @Column(nullable = false, length = 60)
     private String apellido;
-    @Column(nullable = false, length = 80)
+    @Column(nullable = false, length = 80, unique = true)
     private String dui;
     @Column(nullable = false, length = 20)
     private String genero;
     @Column(nullable = false, length = 255)
     private String direccion;
-    @Column(nullable = false, length = 9)
+    @Column(nullable = false, length = 9, unique = true)
     private String telefono;
     @Column(name = "alergia_intolerancia", length = 255)
     private String alergiaIntolerancia;
