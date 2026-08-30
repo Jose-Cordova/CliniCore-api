@@ -78,14 +78,25 @@ public class AuthService implements IAuthService {
     public LoginResponseDTO registrarPaciente(RegistroPacienteDTO dto) {
         validarCredencialesNuevas(dto.getEmail(), dto.getPassword());
 
+        // Normalización de valores para validación y guardado
+        String telefonoLimpio = dto.getTelefono() != null ? dto.getTelefono().replaceAll("\\D", "") : "";
+        String duiLimpio = dto.getDui() != null ? dto.getDui().replaceAll("\\D", "") : "";
+
+        if (pacienteRepository.existsByDui(duiLimpio)) {
+            throw new ConflictException("Ya existe un paciente con el DUI '" + dto.getDui() + "'");
+        }
+        if (pacienteRepository.existsByTelefono(telefonoLimpio)) {
+            throw new ConflictException("Ya existe un paciente con el teléfono '" + dto.getTelefono() + "'");
+        }
+
         Paciente paciente = new Paciente();
         paciente.setNombre(dto.getNombre());
         paciente.setApellido(dto.getApellido());
-        paciente.setDui(dto.getDui());
+        paciente.setDui(duiLimpio);
         paciente.setFechaNacimiento(dto.getFechaNacimiento());
         paciente.setGenero(dto.getGenero());
         paciente.setDireccion(dto.getDireccion());
-        paciente.setTelefono(dto.getTelefono());
+        paciente.setTelefono(telefonoLimpio);
         paciente.setAlergiaIntolerancia(dto.getAlergiaIntolerancia());
         paciente.setFechaRegistro(LocalDate.now());
         paciente.setCodigoExpediente(generarCodigoExpediente());
@@ -96,7 +107,7 @@ public class AuthService implements IAuthService {
         usuario.setEmail(dto.getEmail());
         usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
         usuario.setEstado(true);
-        usuario.setDebeCambiarContrasenia(false); // pacientes no cambian obligatoriamente
+        usuario.setDebeCambiarContrasenia(false);
         usuario = usuarioRepository.save(usuario);
 
         paciente.setUsuario(usuario);
@@ -113,6 +124,17 @@ public class AuthService implements IAuthService {
     public LoginResponseDTO registrarDoctor(RegistroDoctorDTO dto) {
         validarEmailUnico(dto.getEmail());
 
+        // Normalización de valores
+        String telefonoLimpio = dto.getTelefono() != null ? dto.getTelefono().replaceAll("\\D", "") : "";
+        String codigoLimpio = dto.getCodigo() != null ? dto.getCodigo().trim().toUpperCase() : "";
+
+        if (doctorRepository.existsByTelefono(telefonoLimpio)) {
+            throw new ConflictException("Ya existe un doctor con el teléfono '" + dto.getTelefono() + "'");
+        }
+        if (doctorRepository.existsByCodigo(codigoLimpio)) {
+            throw new ConflictException("Ya existe un doctor con el código '" + dto.getCodigo() + "'");
+        }
+
         Especialidad especialidad = especialidadRepository.findById(dto.getEspecialidadId())
                 .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
 
@@ -120,8 +142,8 @@ public class AuthService implements IAuthService {
         doctor.setNombre(dto.getNombre());
         doctor.setApellido(dto.getApellido());
         doctor.setEmail(dto.getEmail());
-        doctor.setTelefono(dto.getTelefono());
-        doctor.setCodigo(dto.getCodigo());
+        doctor.setTelefono(telefonoLimpio);
+        doctor.setCodigo(codigoLimpio);
         doctor.setEspecialidad(especialidad);
         doctor = doctorRepository.save(doctor);
 
@@ -179,7 +201,6 @@ public class AuthService implements IAuthService {
         usuario.setDebeCambiarContrasenia(false);
         usuario = usuarioRepository.save(usuario);
 
-        // Construir un nuevo token sin la bandera
         UsuarioPrincipal principal = new UsuarioPrincipal(
                 usuario,
                 usuario.getEmail(),
