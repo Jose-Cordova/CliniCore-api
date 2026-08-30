@@ -10,7 +10,7 @@ import com.clinicore.CliniCore_api.exceptions.BadRequestException;
 import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
 import com.clinicore.CliniCore_api.interfaces.IDisponibilidadService;
 import com.clinicore.CliniCore_api.repository.DisponibilidadRepository;
-import com.clinicore.CliniCore_api.repository.DoctorRepositiry;
+import com.clinicore.CliniCore_api.repository.DoctorRepository;
 import com.clinicore.CliniCore_api.repository.HorarioBaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class DisponibilidadService implements IDisponibilidadService {
     //Inyeccion de dependecias de los repositorios
     private final DisponibilidadRepository disponibilidadRepository;
-    private final DoctorRepositiry doctorRepositiry;
+    private final DoctorRepository doctorRepository;
     private final HorarioBaseRepository horarioBaseRepository;
 
     @Override
@@ -51,7 +51,7 @@ public class DisponibilidadService implements IDisponibilidadService {
             throw new BadRequestException("El rango máximo permitido para generar disponibilidades es de 7 días.");
         }
         //Buscamos el doctor en la db
-        Doctor doctor = doctorRepositiry.findById(doctorId)
+        Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor no encontrado con id: " + doctorId));
         //Obtenemos la plantilla base configurada por el doctor
         List<HorarioBase> horarios = horarioBaseRepository.findByDoctorId(doctorId);
