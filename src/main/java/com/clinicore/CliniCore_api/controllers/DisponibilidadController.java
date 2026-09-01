@@ -37,7 +37,7 @@ public class DisponibilidadController {
         }
         response.put("slotsGenerados", slotsGenerados);
         return  new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+    } 
 
     //Obtener slots disponibles por doctor y fecha
     @GetMapping("/doctor/{doctorId}")

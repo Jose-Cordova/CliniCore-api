@@ -11,14 +11,28 @@ import java.time.LocalTime;
 @Setter
 public class CitaDTO {
     private Integer id;
+
+    private Integer disponibilidadId;
+
     private LocalDate fecha; //Sale de la Disponibilidad
+
     private LocalTime horaInicio; //Sale de la Disponibilidad
+
     private String motivo;
+
     private EstadoCita estado;
+
     private Integer pacienteId;
+
     private String pacienteNombre;
+
     private Integer doctorId; //Sale de la Disponibilidad
+
     private String doctorNombre;
+
     private String especialidadNombre;
+
     private Integer consultaId; //Nulo hasta que la enfermera tome los signos
+
+
 }
