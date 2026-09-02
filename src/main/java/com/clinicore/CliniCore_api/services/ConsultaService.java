@@ -152,7 +152,7 @@ public class ConsultaService implements IConsultaService {
             throw new ResourceNotFoundException("El paciente con ID " + pacienteId + "no esta tegistrado.");
         }
 
-        return consultaRepository.findByDoctorIdOrderByFechaAtencionDesc(pacienteId).stream()
+        return consultaRepository.findByPacienteIdOrderByFechaAtencionDesc(pacienteId).stream()
                 .map(con -> consultaMapper.toDTO(con, null))
                 .toList();
     }

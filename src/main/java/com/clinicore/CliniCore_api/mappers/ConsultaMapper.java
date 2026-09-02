@@ -13,6 +13,8 @@ public interface ConsultaMapper {
     @Mapping(source = "consulta.id", target = "id")
     @Mapping(source = "consulta.paciente.id", target = "pacienteId")
     @Mapping(source = "consulta.paciente.nombre", target = "pacienteNombre")
+    @Mapping(source = "consulta.doctor.id", target = "doctorId")
+    @Mapping(source = "consulta.doctor.nombre", target = "doctorNombre")
     @Mapping(source = "citaId", target = "citaId")
     ConsultaDTO toDTO(Consulta consulta, Integer citaId);
 
