@@ -13,6 +13,9 @@ import java.util.List;
 public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
 
     //Obtiene el expediente clinico completo del paciente
+    List<Consulta> findByPacienteIdOrderByFechaAtencionDesc(Integer pacienteId);
+
+    //Obtiene el historial de consultas de un doctor
     List<Consulta> findByDoctorIdOrderByFechaAtencionDesc(Integer doctorId);
 
     // Obtiene las consultas firmadas o iniciadas por un médico específico cruzando las citas
