@@ -48,6 +48,9 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    //Constante para que el super admin pueda inactivar los demas admnistradores
+    private static final String SUPER_ADMIN_EMAIL = "admin@gmail.com";
+
     @Override
     public LoginResponseDTO login(LoginRequestDTO dto) {
         Authentication authentication;
@@ -89,6 +92,18 @@ public class AuthService implements IAuthService {
             throw new ConflictException("Ya existe un paciente con el teléfono '" + dto.getTelefono() + "'");
         }
 
+        // 1. Primero creamos el Usuario
+        Usuario usuario = new Usuario();
+        usuario.setEmail(dto.getEmail());
+        usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
+        usuario.setEstado(true);
+        usuario.setDebeCambiarContrasenia(false);
+        usuario = usuarioRepository.save(usuario);
+
+        // 2. Asignamos el rol PACIENTE
+        asignarRole(usuario, ROLE_PACIENTE);
+
+        // 3. Creamos el Paciente vinculado desde el inicio al Usuario
         Paciente paciente = new Paciente();
         paciente.setNombre(dto.getNombre());
         paciente.setApellido(dto.getApellido());
@@ -101,22 +116,30 @@ public class AuthService implements IAuthService {
         paciente.setFechaRegistro(LocalDate.now());
         paciente.setCodigoExpediente(generarCodigoExpediente());
         paciente.setArchivado(false);
+        paciente.setUsuario(usuario);
         paciente = pacienteRepository.save(paciente);
 
-        Usuario usuario = new Usuario();
-        usuario.setEmail(dto.getEmail());
-        usuario.setContrasenia(passwordEncoder.encode(dto.getPassword()));
-        usuario.setEstado(true);
-        usuario.setDebeCambiarContrasenia(false);
-        usuario = usuarioRepository.save(usuario);
+        // 4. Generamos token directamente con paciente.getId()
+        UsuarioPrincipal principal = new UsuarioPrincipal(
+                usuario,
+                paciente.getNombre() + " " + paciente.getApellido(),
+                "PACIENTE",
+                paciente.getId(),
+                null,
+                ROLE_PACIENTE,
+                false
+        );
+        String token = jwtService.generarToken(principal);
 
-        paciente.setUsuario(usuario);
-        pacienteRepository.save(paciente);
-
-        asignarRole(usuario, ROLE_PACIENTE);
-
-        return generarRespuestaConToken(usuario, paciente.getNombre() + " " + paciente.getApellido(),
-                "PACIENTE", ROLE_PACIENTE, false, null);
+        return new LoginResponseDTO(
+                token,
+                usuario.getEmail(),
+                principal.getNombre(),
+                "PACIENTE",
+                ROLE_PACIENTE,
+                false,
+                null
+        );
     }
 
     @Override
@@ -138,17 +161,9 @@ public class AuthService implements IAuthService {
         Especialidad especialidad = especialidadRepository.findById(dto.getEspecialidadId())
                 .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada"));
 
-        Doctor doctor = new Doctor();
-        doctor.setNombre(dto.getNombre());
-        doctor.setApellido(dto.getApellido());
-        doctor.setEmail(dto.getEmail());
-        doctor.setTelefono(telefonoLimpio);
-        doctor.setCodigo(codigoLimpio);
-        doctor.setEspecialidad(especialidad);
-        doctor = doctorRepository.save(doctor);
-
         String passwordTemporal = generarContraseniaAleatoria();
 
+        // 1. Primero creamos el Usuario
         Usuario usuario = new Usuario();
         usuario.setEmail(dto.getEmail());
         usuario.setContrasenia(passwordEncoder.encode(passwordTemporal));
@@ -156,13 +171,32 @@ public class AuthService implements IAuthService {
         usuario.setDebeCambiarContrasenia(true);
         usuario = usuarioRepository.save(usuario);
 
-        doctor.setUsuario(usuario);
-        doctorRepository.save(doctor);
-
+        // 2. Asignamos el rol DOCTOR
         asignarRole(usuario, ROLE_DOCTOR);
 
-        return generarRespuestaConToken(usuario, doctor.getNombre() + " " + doctor.getApellido(),
-                "DOCTOR", ROLE_DOCTOR, true, passwordTemporal);
+        // 3. Creamos el Doctor vinculado desde el inicio al Usuario
+        Doctor doctor = new Doctor();
+        doctor.setNombre(dto.getNombre());
+        doctor.setApellido(dto.getApellido());
+        doctor.setEmail(dto.getEmail());
+        doctor.setTelefono(telefonoLimpio);
+        doctor.setCodigo(codigoLimpio);
+        doctor.setEspecialidad(especialidad);
+        doctor.setUsuario(usuario);
+        doctor = doctorRepository.save(doctor);
+
+        UsuarioPrincipal principal = new UsuarioPrincipal(
+                usuario,
+                doctor.getNombre() + " " + doctor.getApellido(),
+                "DOCTOR",
+                null,
+                doctor.getId(),
+                ROLE_DOCTOR,
+                true
+        );
+        String token = jwtService.generarToken(principal);
+
+        return new LoginResponseDTO(token, usuario.getEmail(), principal.getNombre(), "DOCTOR", ROLE_DOCTOR, true, passwordTemporal);
     }
 
     @Override
@@ -272,18 +306,26 @@ public class AuthService implements IAuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
 
+        // 1. El usuario no puede cambiarse su propio estado
         if (authenticatedUser.id() != null && authenticatedUser.id().equals(usuarioId)) {
             throw new BadRequestException("No puedes cambiar tu propio estado");
         }
 
+        // 2. Obtener usuario objetivo y su rol
         Usuario usuarioObjetivo = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        UsuarioRole usuarioRole = usuarioRoleRepository.findByUsuario_Id(usuarioId)
+        UsuarioRole usuarioRoleObjetivo = usuarioRoleRepository.findByUsuario_Id(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado para el usuario"));
 
-        if (ROLE_ADMIN.equals(usuarioRole.getRole().getNombre())) {
-            throw new BadRequestException("No se puede cambiar el estado de un usuario con rol ADMIN");
+        String rolObjetivo = usuarioRoleObjetivo.getRole().getNombre();
+
+        // 3. Si el objetivo es ADMIN, solo el super admin puede modificarlo
+        if (ROLE_ADMIN.equals(rolObjetivo)) {
+            if (!SUPER_ADMIN_EMAIL.equalsIgnoreCase(authenticatedUser.email())) {
+                throw new BadRequestException("Solo el super administrador puede cambiar el estado de otro administrador");
+            }
+            // Evitar que el super admin se inactive a sí mismo (ya cubierto arriba)
         }
 
         usuarioObjetivo.setEstado(nuevoEstado);
@@ -427,4 +469,6 @@ public class AuthService implements IAuthService {
         }
         return sb.toString();
     }
+
+
 }

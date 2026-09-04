@@ -61,9 +61,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas: solo login y registro de pacientes.
-                        // El registro de doctores/personal se protege con @PreAuthorize en el controlador
-                        // y además se exige estar autenticado a nivel de filtro.
-                        .requestMatchers("/api/auth/login", "/api/auth/registro-paciente").permitAll()
+                        // El registro de doctores/personal/admin se protege con @PreAuthorize en el controlador
+                        .requestMatchers(
+                                "/api/auth/login", "/api/auth/login/",
+                                "/api/auth/registro-paciente", "/api/auth/registro-paciente/"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
