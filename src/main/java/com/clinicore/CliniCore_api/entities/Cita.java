@@ -22,15 +22,19 @@ public class Cita implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(nullable = false, length = 255)
+
     private String motivo;
     @Column(nullable = false, length = 80)
+
     @Enumerated(EnumType.STRING)
     private EstadoCita estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paciente_id")
+
     private Paciente paciente;
     @ManyToOne(fetch = FetchType.LAZY)
+
     @JoinColumn(name = "consulta_id")
     private Consulta consulta;
 }

@@ -34,7 +34,7 @@ public class EspecialidadService implements IEspecialidadService {
     public EspecialidadDTO findById(Integer id) {
         //Retornamos solo una especialidad
         Especialidad entity = especialidadRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Marca no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Especialidad no encontrada con ID: " + id));
         return mapper.toDTO(entity);
     }
 

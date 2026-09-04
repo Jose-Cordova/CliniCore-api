@@ -3,7 +3,7 @@ package com.clinicore.CliniCore_api.services;
 import com.clinicore.CliniCore_api.dto.UsuarioDTO;
 import com.clinicore.CliniCore_api.dto.auth.*;
 import com.clinicore.CliniCore_api.entities.*;
-import com.clinicore.CliniCore_api.enums.EstadoExpediente;
+
 import com.clinicore.CliniCore_api.exceptions.BadRequestException;
 import com.clinicore.CliniCore_api.exceptions.ConflictException;
 import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
@@ -100,7 +100,7 @@ public class AuthService implements IAuthService {
         paciente.setAlergiaIntolerancia(dto.getAlergiaIntolerancia());
         paciente.setFechaRegistro(LocalDate.now());
         paciente.setCodigoExpediente(generarCodigoExpediente());
-        paciente.setEstado(EstadoExpediente.ACTIVO);
+        paciente.setArchivado(false);
         paciente = pacienteRepository.save(paciente);
 
         Usuario usuario = new Usuario();

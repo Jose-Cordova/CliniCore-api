@@ -15,10 +15,20 @@ public interface PacienteRepository extends JpaRepository<Paciente, Integer> {
     Optional<Paciente> findByUsuario_Id(Integer usuarioId);
     boolean existsByDui(String dui);
     boolean existsByTelefono(String telefono);
+    // Busca un paciente por su DUI para evitar duplicados
+    Optional<Paciente> findByDui(String dui);
+
+    // Busca un paciente por su código de expediente único
+    Optional<Paciente> findByCodigoExpediente(String codigoExpediente);
 
     @Query("SELECT COUNT(p) FROM Paciente p WHERE p.fechaRegistro BETWEEN :inicio AND :fin")
     long countByFechaRegistroBetween(
             @Param("inicio") LocalDate inicio,
             @Param("fin") LocalDate fin
     );
+    // Obtiene el último paciente registrado con el código de expediente más alto
+    Optional<Paciente> findFirstByOrderByCodigoExpedienteDesc();
+
+    // Verifica si ya existe otro paciente con el mismo DUI pero con diferente ID (para actualización)
+    boolean existsByDuiAndIdNot(String dui, Integer id);
 }
