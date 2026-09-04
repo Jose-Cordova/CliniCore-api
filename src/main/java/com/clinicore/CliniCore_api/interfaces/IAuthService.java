@@ -15,6 +15,7 @@ public interface IAuthService {
     LoginResponseDTO registrarPersonal(RegistroPersonalDTO dto);
 
     LoginResponseDTO cambiarContrasenia(String nuevaContrasenia);
+    LoginResponseDTO resetearContrasenia(Integer usuarioId);
     void cambiarEstadoUsuario(Integer usuarioId, boolean nuevoEstado);
 
     List<UsuarioDTO> listarUsuarios();

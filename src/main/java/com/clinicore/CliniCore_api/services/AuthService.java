@@ -225,6 +225,49 @@ public class AuthService implements IAuthService {
 
     @Override
     @Transactional
+    public LoginResponseDTO resetearContrasenia(Integer usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        UsuarioRole usuarioRole = usuarioRoleRepository.findByUsuario_Id(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado para el usuario"));
+
+        if (ROLE_PACIENTE.equals(usuarioRole.getRole().getNombre())) {
+            throw new BadRequestException("Solo se puede resetear la contraseña de usuarios empleados o médicos");
+        }
+
+        String passwordTemporal = generarContraseniaAleatoria();
+        usuario.setContrasenia(passwordEncoder.encode(passwordTemporal));
+        usuario.setDebeCambiarContrasenia(true);
+        usuario = usuarioRepository.save(usuario);
+
+        String rol = usuarioRole.getRole().getNombre();
+        String tipo = ROLE_DOCTOR.equals(rol) ? "DOCTOR" : (ROLE_ADMIN.equals(rol) ? "ADMIN" : "PERSONAL");
+        String nombre = usuario.getEmail();
+
+        if (ROLE_DOCTOR.equals(rol)) {
+            Doctor doctor = doctorRepository.findByUsuario_Id(usuario.getId()).orElse(null);
+            if (doctor != null) {
+                nombre = doctor.getNombre() + " " + doctor.getApellido();
+            }
+        }
+
+        UsuarioPrincipal principal = new UsuarioPrincipal(
+                usuario,
+                nombre,
+                tipo,
+                obtenerPacienteId(usuario),
+                obtenerDoctorId(usuario),
+                rol,
+                true
+        );
+        String token = jwtService.generarToken(principal);
+
+        return new LoginResponseDTO(token, usuario.getEmail(), nombre, tipo, rol, true, passwordTemporal);
+    }
+
+    @Override
+    @Transactional
     public void cambiarEstadoUsuario(Integer usuarioId, boolean nuevoEstado) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();

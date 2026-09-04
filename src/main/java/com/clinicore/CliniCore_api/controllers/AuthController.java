@@ -80,4 +80,11 @@ public class AuthController {
         response.put("message", "Estado del usuario actualizado correctamente");
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/usuarios/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<LoginResponseDTO> resetearContrasenia(@PathVariable Integer id) {
+        LoginResponseDTO response = authService.resetearContrasenia(id);
+        return ResponseEntity.ok(response);
+    }
 }
