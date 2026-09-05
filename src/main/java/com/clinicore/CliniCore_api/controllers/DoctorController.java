@@ -24,7 +24,7 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.findAll());
     }
 
-    //Obtenemos un doctor por id
+    //Obtenemos un doctor por i
     @GetMapping("/doctores/{id}")
     public ResponseEntity<DoctorDTO> getById(@PathVariable Integer id){
         return ResponseEntity.ok(doctorService.findById(id));

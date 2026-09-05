@@ -104,6 +104,7 @@ public class CitaService implements ICitaService {
 
         Cita nuevaCita = citaMapper.toEntity(requestDTO);
         nuevaCita.setPaciente(paciente);
+        nuevaCita.setDoctor(disponibilidad.getDoctor()); //Se ha agregado nuevo
         nuevaCita.setEstado(EstadoCita.PENDIENTE);
         Cita citaGuardada = citaRepository.save(nuevaCita);
 
@@ -174,6 +175,7 @@ public class CitaService implements ICitaService {
         disponibilidadRepository.save(disponibilidadVieja);
 
         citaOriginal.setEstado(EstadoCita.REASIGNADA);
+        citaOriginal.setDoctor(disponibilidadNueva.getDoctor()); //Se agrego tambien
         Cita citaModificada = citaRepository.save(citaOriginal);
 
         disponibilidadNueva.setCita(citaModificada);
