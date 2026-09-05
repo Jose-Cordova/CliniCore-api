@@ -18,6 +18,8 @@ public class CitaDTO {
 
     private LocalTime horaInicio; //Sale de la Disponibilidad
 
+    private LocalTime horaFin; //Sale de la dispinibilidad
+
     private String motivo;
 
     private EstadoCita estado;

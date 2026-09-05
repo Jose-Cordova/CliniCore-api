@@ -37,4 +37,11 @@ public class Cita implements Serializable {
 
     @JoinColumn(name = "consulta_id")
     private Consulta consulta;
+
+    //agregamos la relacion con doctor
+    //para que qude guardado cuano se agende la cita, o si se cancela
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
 }

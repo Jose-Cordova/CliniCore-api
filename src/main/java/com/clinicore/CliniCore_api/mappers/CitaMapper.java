@@ -20,8 +20,12 @@ public interface CitaMapper {
     @Mapping(source = "cita.consulta.id", target = "consultaId")
     @Mapping(source = "disponibilidad.fecha", target = "fecha")
     @Mapping(source = "disponibilidad.horaInicio", target = "horaInicio")
-    @Mapping(source = "disponibilidad.doctor.id", target = "doctorId")
-    @Mapping(source = "disponibilidad.doctor.nombre", target = "doctorNombre")
+    @Mapping(source = "disponibilidad.horaFin", target = "horaFin") // NUEVO
+
+    //se cambio porque se lee el doctor desde la cita y no desde la disponibilidad
+    //porque se necesita mantener el nomnbre del doctor cuando se cancele una cita
+    @Mapping(source = "cita.doctor.id", target = "doctorId")
+    @Mapping(source = "cita.doctor.nombre", target = "doctorNombre")
     @Mapping(source = "disponibilidad.doctor.especialidad.nombre", target = "especialidadNombre")
     // se quita si se quiere la disponibilidad del lado del cliente
     @Mapping(source = "disponibilidad.id", target = "disponibilidadId")

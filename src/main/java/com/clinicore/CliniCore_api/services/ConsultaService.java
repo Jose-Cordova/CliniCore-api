@@ -149,11 +149,16 @@ public class ConsultaService implements IConsultaService {
     @Override
     public List<ConsultaDTO> findByPacienteId(Integer pacienteId) {
         if (!pacienteRepository.existsById(pacienteId)) {
-            throw new ResourceNotFoundException("El paciente con ID " + pacienteId + "no esta tegistrado.");
+            throw new ResourceNotFoundException("El paciente con ID " + pacienteId + " no está registrado.");
         }
 
         return consultaRepository.findByPacienteIdOrderByFechaAtencionDesc(pacienteId).stream()
-                .map(con -> consultaMapper.toDTO(con, null))
+                .map(con -> {
+                    Integer citaId = citaRepository.findByConsultaId(con.getId())
+                            .map(Cita::getId)
+                            .orElse(null);
+                    return consultaMapper.toDTO(con, citaId);
+                })
                 .toList();
     }
 
