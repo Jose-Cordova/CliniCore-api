@@ -90,9 +90,9 @@ public class ConsultaController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Ver expediente completo (Disponible para el Paciente, Doctor y Administrador)
+    // Ver expediente completo (Disponible para el Paciente, Doctor, Personal de Enfermería y Administrador)
     @GetMapping("/paciente/{pacienteId}")
-    @PreAuthorize("hasAnyRole('PACIENTE', 'DOCTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'DOCTOR', 'ADMIN', 'PERSONAL')")
     public ResponseEntity<List<ConsultaDTO>> getExpedientePaciente(@PathVariable Integer pacienteId) {
         List<ConsultaDTO> historial = consultaService.findByPacienteId(pacienteId);
         return new ResponseEntity<>(historial, HttpStatus.OK);
