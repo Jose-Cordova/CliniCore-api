@@ -44,6 +44,8 @@ public class Paciente implements Serializable {
     private String alergiaIntolerancia;
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean archivado;
+    @Column(nullable = false, length = 20)
+    private String estado = "ACTIVO";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")

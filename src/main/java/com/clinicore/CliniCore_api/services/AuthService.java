@@ -116,6 +116,7 @@ public class AuthService implements IAuthService {
         paciente.setFechaRegistro(LocalDate.now());
         paciente.setCodigoExpediente(generarCodigoExpediente());
         paciente.setArchivado(false);
+        paciente.setEstado("ACTIVO");
         paciente.setUsuario(usuario);
         paciente = pacienteRepository.save(paciente);
 

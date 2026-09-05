@@ -4,6 +4,7 @@ package com.clinicore.CliniCore_api.services;
 import com.clinicore.CliniCore_api.dto.ConsultaDTO;
 import com.clinicore.CliniCore_api.entities.Cita;
 import com.clinicore.CliniCore_api.entities.Consulta;
+import com.clinicore.CliniCore_api.entities.Disponibilidad;
 import com.clinicore.CliniCore_api.enums.EstadoCita;
 import com.clinicore.CliniCore_api.exceptions.BadRequestException;
 import com.clinicore.CliniCore_api.exceptions.ResourceNotFoundException;
@@ -44,6 +45,13 @@ public class ConsultaService implements IConsultaService {
             throw new BadRequestException("Solo se puede realizar el tiraje en citas con estado PENDIENTE.");
         }
 
+        Disponibilidad slotTiraje = disponibilidadRepository.findByCitaId(cita.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el horario asignado a la cita."));
+
+        if (!slotTiraje.getFecha().isEqual(LocalDate.now())) {
+            throw new BadRequestException("Solo se pueden registrar signos vitales en la fecha programada de la cita (" + slotTiraje.getFecha() + ").");
+        }
+
         Consulta consulta = consultaMapper.toEntity(tirajeDTO);
 
 
@@ -73,6 +81,13 @@ public class ConsultaService implements IConsultaService {
 
         if (cita.getEstado() != EstadoCita.EN_ESPERA) {
             throw new BadRequestException("Esta consulta no se puede finalizar porque la cita no está en estado EN_ESPERA.");
+        }
+
+        Disponibilidad slotConsulta = disponibilidadRepository.findByCitaId(cita.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el horario asignado a la cita."));
+
+        if (!slotConsulta.getFecha().isEqual(LocalDate.now())) {
+            throw new BadRequestException("Solo se pueden atender consultas en la fecha programada de la cita (" + slotConsulta.getFecha() + ").");
         }
 
         Consulta consulta = cita.getConsulta();
