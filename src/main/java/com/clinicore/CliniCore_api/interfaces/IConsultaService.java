@@ -24,5 +24,9 @@ public interface IConsultaService {
 
     // Obtener consultas realizadas por el médico vista del lado del medico
     List<ConsultaDTO> findByDoctorId(Integer doctorId);
+
+    // Obtener todas las consultas para administración / métricas
+    List<ConsultaDTO> findAll();
 }
+
 

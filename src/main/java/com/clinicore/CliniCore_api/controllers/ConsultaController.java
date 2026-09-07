@@ -106,4 +106,12 @@ public class ConsultaController {
         return new ResponseEntity<>(consultas, HttpStatus.OK);
     }
 
+    // Obtener todas las consultas registradas en la clínica (para Administración / Estadísticas)
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PERSONAL')")
+    public ResponseEntity<List<ConsultaDTO>> getAllConsultas() {
+        return ResponseEntity.ok(consultaService.findAll());
+    }
+
 }
+
