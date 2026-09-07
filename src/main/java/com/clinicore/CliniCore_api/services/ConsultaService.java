@@ -183,4 +183,17 @@ public class ConsultaService implements IConsultaService {
                 .map(con -> consultaMapper.toDTO(con, null))
                 .toList();
     }
+
+    @Override
+    public List<ConsultaDTO> findAll() {
+        return consultaRepository.findAll().stream()
+                .map(con -> {
+                    Integer citaId = citaRepository.findByConsultaId(con.getId())
+                            .map(Cita::getId)
+                            .orElse(null);
+                    return consultaMapper.toDTO(con, citaId);
+                })
+                .toList();
+    }
 }
+
