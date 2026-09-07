@@ -54,7 +54,6 @@ public class ConsultaService implements IConsultaService {
 
         Consulta consulta = consultaMapper.toEntity(tirajeDTO);
 
-
         consulta.setFechaAtencion(LocalDateTime.now());
         consulta.setPaciente(cita.getPaciente());
 
